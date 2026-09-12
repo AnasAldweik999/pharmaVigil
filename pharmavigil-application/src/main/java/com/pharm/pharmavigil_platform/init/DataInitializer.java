@@ -13,6 +13,7 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import java.time.Instant;
 import java.util.Set;
 
 @Slf4j
@@ -37,6 +38,10 @@ public class DataInitializer implements ApplicationRunner {
                     .email(supervisorEmail)
                     .passwordHash(passwordEncoder.encode(supervisorPassword))
                     .accountType(AccountType.SUPERVISOR)
+                    .lastUpdatedAt(Instant.now())
+                    .lastUpdatedBy("Default")
+                    .createdAt(Instant.now())
+                    .createdBy("DEFAULT")
                     .roles(Set.of(
                             UserRole.DASHBOARD_VIEWER,
                             UserRole.MACHINE_MANAGER,
