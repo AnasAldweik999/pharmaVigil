@@ -1,0 +1,68 @@
+[
+  {
+    "key": "DASHBOARD_VIEWER",
+    "name": "Dashboard Viewer",
+    "description": "Access to the supervisor dashboard and its analytics",
+    "accountType": "SUPERVISOR"
+  },
+  {
+    "key": "REPORTS_MANAGER",
+    "name": "Reports Manager",
+    "description": "View and manage work reports",
+    "accountType": "SUPERVISOR"
+  },
+  {
+    "key": "MACHINE_MANAGER",
+    "name": "Machine Manager",
+    "description": "Add, edit, and remove machines",
+    "accountType": "SUPERVISOR"
+  },
+  {
+    "key": "STOP_TYPES_MANAGER",
+    "name": "Stop Types Manager",
+    "description": "Add, edit, and remove stop types",
+    "accountType": "SUPERVISOR"
+  },
+  {
+    "key": "USERS_MANAGER",
+    "name": "Users Manager",
+    "description": "Create, update, and manage user accounts",
+    "accountType": "SUPERVISOR"
+  },
+  {
+    "key": "SHIFT_MANAGER",
+    "name": "Shift Manager",
+    "description": "Create and manage production shifts",
+    "accountType": "SUPERVISOR"
+  },
+  {
+    "key": "FIELD_REPORTER",
+    "name": "Field Reporter",
+    "description": "Submit and manage work reports from the field",
+    "accountType": "STAFF"
+  },
+  {
+    "key": "PRODUCTS_MANAGER",
+    "name": "Products Manager",
+    "description": "Add and remove products",
+    "accountType": "SUPERVISOR"
+  },
+  {
+    "key": "DEPARTMENTS_MANAGER",
+    "name": "Departments Manager",
+    "description": "Create, update, and manage departments",
+    "accountType": "SUPERVISOR"
+  },
+  {
+    "key": "BATCH_TRACKING_MANAGER",
+    "name": "Batch Tracking Manager",
+    "description": "View and manage batch traveler records across departments",
+    "accountType": "SUPERVISOR"
+  },
+  {
+    "key": "BATCH_LOG_REPORTER",
+    "name": "Batch Log Reporter",
+    "description": "Log batch line-clearance entries and reject batches from the field",
+    "accountType": "STAFF"
+  }
+]

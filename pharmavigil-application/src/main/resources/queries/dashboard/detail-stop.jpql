@@ -1,0 +1,44 @@
+-- [detail-stop-machines]
+SELECT m.id, mach.id, mach.name, m.status, dept.name,
+       u.id, u.name, u.username, u.email,
+       sh.id, sh.name, wr.reportDate,
+       COUNT(DISTINCT p.id), COALESCE(SUM(s.duration), 0)
+FROM WorkReport wr JOIN wr.staffUser u JOIN wr.shift sh JOIN wr.machines m JOIN m.machine mach
+     LEFT JOIN m.department dept JOIN m.products p JOIN p.stops s LEFT JOIN s.stopType st
+{filter}
+GROUP BY m.id, mach.id, mach.name, m.status, dept.name, u.id, u.name, u.username, u.email, sh.id, sh.name, wr.reportDate
+ORDER BY wr.reportDate DESC, mach.name
+
+-- [detail-stop-machines-count]
+SELECT COUNT(DISTINCT m.id)
+FROM WorkReport wr JOIN wr.staffUser u JOIN wr.shift sh JOIN wr.machines m JOIN m.machine mach
+     JOIN m.products p JOIN p.stops s LEFT JOIN s.stopType st
+{filter}
+
+-- [detail-stop-products]
+SELECT DISTINCT prod.id, CASE WHEN prod IS NOT NULL THEN prod.name ELSE p.productName END, p.batchNo, p.consignee,
+       p.stages
+FROM WorkReportProductStop s JOIN s.product p LEFT JOIN p.product prod LEFT JOIN s.stopType st
+WHERE p.workReportMachine.id = :wmId AND {filter}
+ORDER BY 2
+
+-- [detail-stop-products-count]
+SELECT COUNT(DISTINCT p.id)
+FROM WorkReportProductStop s JOIN s.product p LEFT JOIN s.stopType st
+WHERE p.workReportMachine.id = :wmId AND {filter}
+
+-- [detail-product-stops]
+SELECT st.id, CASE WHEN st IS NOT NULL THEN st.name ELSE s.stopTypeName END, s.duration, s.note
+FROM WorkReportProductStop s LEFT JOIN s.stopType st
+WHERE s.product.id = :productId
+ORDER BY 2
+
+-- [detail-product-stops-count]
+SELECT COUNT(s.id)
+FROM WorkReportProductStop s
+WHERE s.product.id = :productId
+
+-- [fetch-stop-data]
+SELECT s.product.id, s.duration
+FROM WorkReportProductStop s
+WHERE s.product.id IN :ids

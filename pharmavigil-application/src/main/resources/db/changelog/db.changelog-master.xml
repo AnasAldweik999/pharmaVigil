@@ -1,0 +1,395 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="001-create-users" author="pharmavigil">
+        <createTable tableName="users">
+            <column name="id" type="uuid">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="varchar(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="email" type="varchar(255)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="password_hash" type="varchar(255)"/>
+            <column name="role" type="varchar(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="varchar(30)" defaultValue="PENDING_EMAIL_VERIFICATION">
+                <constraints nullable="false"/>
+            </column>
+            <column name="refresh_token_hash" type="varchar(64)"/>
+            <column name="refresh_token_expires_at" type="timestamp"/>
+            <column name="created_at" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="002-create-password-reset-tokens" author="pharmavigil">
+        <createTable tableName="password_reset_tokens">
+            <column name="id" type="uuid">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="user_id" type="uuid">
+                <constraints nullable="false"
+                             foreignKeyName="fk_prt_user"
+                             references="users(id)"/>
+            </column>
+            <column name="token" type="varchar(36)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="expires_at" type="timestamp">
+                <constraints nullable="false"/>
+            </column>
+            <column name="used" type="boolean" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+
+    <changeSet id="003-create-machines" author="pharmavigil">
+        <createTable tableName="machines">
+            <column name="id" type="uuid">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="varchar(100)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="created_at" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="004-create-stop-types" author="pharmavigil">
+        <createTable tableName="stop_types">
+            <column name="id" type="uuid">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="varchar(100)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="created_at" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="005-create-shifts" author="pharmavigil">
+        <createTable tableName="shifts">
+            <column name="id" type="uuid">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="varchar(100)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="start_time" type="time">
+                <constraints nullable="false"/>
+            </column>
+            <column name="end_time" type="time">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="006-create-work-reports" author="pharmavigil">
+        <createTable tableName="work_reports">
+            <column name="id" type="uuid">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="staff_user_id" type="uuid">
+                <constraints nullable="false"
+                             foreignKeyName="fk_wr_staff_user"
+                             references="users(id)"/>
+            </column>
+            <column name="shift_id" type="uuid">
+                <constraints nullable="false"
+                             foreignKeyName="fk_wr_shift"
+                             references="shifts(id)"/>
+            </column>
+            <column name="report_date" type="date">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addUniqueConstraint
+            constraintName="uq_work_report_staff_shift_date"
+            tableName="work_reports"
+            columnNames="staff_user_id, shift_id, report_date"/>
+    </changeSet>
+
+    <changeSet id="007-create-work-report-machines" author="pharmavigil">
+        <createTable tableName="work_report_machines">
+            <column name="id" type="uuid">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="work_report_id" type="uuid">
+                <constraints nullable="false"
+                             foreignKeyName="fk_wrm_work_report"
+                             references="work_reports(id)"/>
+            </column>
+            <column name="machine_id" type="uuid">
+                <constraints nullable="false"
+                             foreignKeyName="fk_wrm_machine"
+                             references="machines(id)"/>
+            </column>
+            <column name="machine_status" type="varchar(20)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="008-create-work-report-products" author="pharmavigil">
+        <createTable tableName="work_report_products">
+            <column name="id" type="uuid">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="work_report_machine_id" type="uuid">
+                <constraints nullable="false"
+                             foreignKeyName="fk_wrp_machine"
+                             references="work_report_machines(id)"/>
+            </column>
+            <column name="product_name" type="varchar(200)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="batch_no" type="varchar(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="output_units" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deviation" type="boolean" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deviation_details" type="varchar(500)"/>
+            <column name="hold" type="boolean" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="hold_details" type="varchar(500)"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="009-create-work-report-product-stops" author="pharmavigil">
+        <createTable tableName="work_report_product_stops">
+            <column name="id" type="uuid">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="work_report_product_id" type="uuid">
+                <constraints nullable="false"
+                             foreignKeyName="fk_wrps_product"
+                             references="work_report_products(id)"/>
+            </column>
+            <column name="stop_type_id" type="uuid">
+                <constraints nullable="false"
+                             foreignKeyName="fk_wrps_stop_type"
+                             references="stop_types(id)"/>
+            </column>
+            <column name="from_datetime" type="timestamp">
+                <constraints nullable="false"/>
+            </column>
+            <column name="to_datetime" type="timestamp">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="010-create-work-report-incidents" author="pharmavigil">
+        <createTable tableName="work_report_incidents">
+            <column name="id" type="uuid">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="work_report_machine_id" type="uuid">
+                <constraints nullable="false"
+                             foreignKeyName="fk_wri_machine"
+                             references="work_report_machines(id)"/>
+            </column>
+            <column name="description" type="text">
+                <constraints nullable="false"/>
+            </column>
+            <column name="from_datetime" type="timestamp">
+                <constraints nullable="false"/>
+            </column>
+            <column name="to_datetime" type="timestamp">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+
+    <changeSet id="011-update-work-report-product-stops-remove-datetimes-add-duration" author="pharmavigil">
+        <dropColumn tableName="work_report_product_stops" columnName="from_datetime"/>
+        <dropColumn tableName="work_report_product_stops" columnName="to_datetime"/>
+        <addColumn tableName="work_report_product_stops">
+            <column name="duration" type="int" defaultValue="1">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="012-update-work-report-incidents-remove-datetimes" author="pharmavigil">
+        <dropColumn tableName="work_report_incidents" columnName="from_datetime"/>
+        <dropColumn tableName="work_report_incidents" columnName="to_datetime"/>
+    </changeSet>
+
+    <changeSet id="013-work-reports-denormalize-shift" author="pharmavigil">
+        <addColumn tableName="work_reports">
+            <column name="shift_name" type="varchar(100)" defaultValue="(unknown)">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+        <dropForeignKeyConstraint baseTableName="work_reports" constraintName="fk_wr_shift"/>
+    </changeSet>
+
+    <changeSet id="014-work-report-machines-denormalize-machine" author="pharmavigil">
+        <addColumn tableName="work_report_machines">
+            <column name="machine_name" type="varchar(100)" defaultValue="(unknown)">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+        <dropForeignKeyConstraint baseTableName="work_report_machines" constraintName="fk_wrm_machine"/>
+    </changeSet>
+
+    <changeSet id="015-work-report-product-stops-denormalize-stop-type" author="pharmavigil">
+        <addColumn tableName="work_report_product_stops">
+            <column name="stop_type_name" type="varchar(100)" defaultValue="(unknown)">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+        <dropForeignKeyConstraint baseTableName="work_report_product_stops" constraintName="fk_wrps_stop_type"/>
+    </changeSet>
+
+    <changeSet id="016-create-saved-charts" author="pharmavigil">
+        <createTable tableName="saved_charts">
+            <column name="id" type="uuid">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="varchar(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="chart_type" type="varchar(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="from_date" type="date"/>
+            <column name="to_date" type="date"/>
+            <column name="shift_id" type="uuid"/>
+            <column name="staff_email" type="varchar(255)"/>
+            <column name="group_by" type="varchar(20)"/>
+            <column name="created_at" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="017-create-saved-chart-metrics" author="pharmavigil">
+        <createTable tableName="saved_chart_metrics">
+            <column name="saved_chart_id" type="uuid">
+                <constraints nullable="false"
+                             foreignKeyName="fk_scm_chart"
+                             references="saved_charts(id)"/>
+            </column>
+            <column name="metric" type="varchar(50)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="018-saved-charts-add-supervisor-id" author="pharmavigil">
+        <addColumn tableName="saved_charts">
+            <column name="supervisor_id" type="uuid"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="019-drop-saved-chart-metrics" author="pharmavigil">
+        <dropTable tableName="saved_chart_metrics"/>
+    </changeSet>
+
+    <changeSet id="020-drop-saved-charts" author="pharmavigil">
+        <dropTable tableName="saved_charts"/>
+    </changeSet>
+
+    <changeSet id="021-alter-output-units-to-decimal" author="anas">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM databasechangelog WHERE id='021-alter-output-units-to-decimal' AND filename='db/changelog/db.changelog-master.xml'</sqlCheck>
+        </preConditions>
+        <modifyDataType tableName="work_report_products"
+                        columnName="output_units"
+                        newDataType="DECIMAL(15,4)"/>
+    </changeSet>
+
+    <changeSet id="022-widen-output-units-precision" author="anas">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM databasechangelog WHERE id='022-widen-output-units-precision' AND filename='db/changelog/db.changelog-master.xml'</sqlCheck>
+        </preConditions>
+        <modifyDataType tableName="work_report_products"
+                        columnName="output_units"
+                        newDataType="DECIMAL(19,4)"/>
+    </changeSet>
+
+    <changeSet id="023-alter-output-units-to-bigint" author="anas">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM databasechangelog WHERE id='023-alter-output-units-to-bigint' AND filename='db/changelog/db.changelog-master.xml'</sqlCheck>
+        </preConditions>
+        <modifyDataType tableName="work_report_products"
+                        columnName="output_units"
+                        newDataType="BIGINT"/>
+    </changeSet>
+
+    <changeSet id="024-alter-stop-duration-to-bigint" author="anas">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM databasechangelog WHERE id='024-alter-stop-duration-to-bigint' AND filename='db/changelog/db.changelog-master.xml'</sqlCheck>
+        </preConditions>
+        <modifyDataType tableName="work_report_product_stops"
+                        columnName="duration"
+                        newDataType="BIGINT"/>
+    </changeSet>
+
+    <changeSet id="025-shifts-drop-time-columns" author="anas">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM databasechangelog WHERE id='025-shifts-drop-time-columns' AND filename='db/changelog/db.changelog-master.xml'</sqlCheck>
+        </preConditions>
+        <dropColumn tableName="shifts" columnName="start_time"/>
+        <dropColumn tableName="shifts" columnName="end_time"/>
+    </changeSet>
+
+    <changeSet id="026-add-destination-to-work-report-products" author="anas">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM databasechangelog WHERE id='026-add-destination-to-work-report-products' AND filename='db/changelog/db.changelog-master.xml'</sqlCheck>
+        </preConditions>
+        <addColumn tableName="work_report_products">
+            <column name="destination" type="varchar(150)"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="027-add-logged-out-at-to-users" author="anas">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM databasechangelog WHERE id='027-add-logged-out-at-to-users' AND filename='db/changelog/db.changelog-master.xml'</sqlCheck>
+        </preConditions>
+        <addColumn tableName="users">
+            <column name="logged_out_at" type="timestamp"/>
+        </addColumn>
+    </changeSet>
+
+
+    <include file="db/changelog/v1.xml"/>
+
+</databaseChangeLog>

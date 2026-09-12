@@ -1,0 +1,18 @@
+-- [grouped-stop-data]
+SELECT s.stopType.id,
+       CASE WHEN st IS NOT NULL THEN st.name ELSE s.stopTypeName END,
+       COUNT(DISTINCT mach.id),
+       COUNT(DISTINCT p.id),
+       COALESCE(SUM(s.duration), 0)
+FROM WorkReport wr JOIN wr.staffUser u JOIN wr.shift sh JOIN wr.machines m JOIN m.machine mach
+     JOIN m.products p JOIN p.stops s LEFT JOIN s.stopType st
+{filter}
+GROUP BY COALESCE(str(s.stopType.id), CONCAT('legacy:', s.stopTypeName)), s.stopType.id,
+         CASE WHEN st IS NOT NULL THEN st.name ELSE s.stopTypeName END
+ORDER BY 2
+
+-- [grouped-stop-count]
+SELECT COUNT(DISTINCT COALESCE(str(s.stopType.id), CONCAT('legacy:', s.stopTypeName)))
+FROM WorkReport wr JOIN wr.staffUser u JOIN wr.shift sh JOIN wr.machines m JOIN m.machine mach
+     JOIN m.products p JOIN p.stops s LEFT JOIN s.stopType st
+{filter}

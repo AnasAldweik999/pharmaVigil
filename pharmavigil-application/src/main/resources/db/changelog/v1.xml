@@ -1,0 +1,1056 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="028-add-user-id-to-users" author="anas">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM databasechangelog WHERE id='028-add-user-id-to-users' AND filename='db/changelog/v1.xml'</sqlCheck>
+        </preConditions>
+        <addColumn tableName="users">
+            <column name="user_id" type="varchar(255)"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="029-add-account-type-to-users" author="anas">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM databasechangelog WHERE id='029-add-account-type-to-users' AND filename='db/changelog/v1.xml'</sqlCheck>
+        </preConditions>
+        <addColumn tableName="users">
+            <column name="account_type" type="varchar(20)" defaultValue="SUPERVISOR">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="030-migrate-role-to-account-type" author="anas">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM databasechangelog WHERE id='030-migrate-role-to-account-type' AND filename='db/changelog/v1.xml'</sqlCheck>
+        </preConditions>
+        <sql>UPDATE users SET account_type = role</sql>
+    </changeSet>
+
+    <changeSet id="031-drop-role-from-users" author="anas">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM databasechangelog WHERE id='031-drop-role-from-users' AND filename='db/changelog/v1.xml'</sqlCheck>
+        </preConditions>
+        <dropColumn tableName="users" columnName="role"/>
+    </changeSet>
+
+    <changeSet id="032-create-user-roles-table" author="anas">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM databasechangelog WHERE id='032-create-user-roles-table' AND filename='db/changelog/v1.xml'</sqlCheck>
+        </preConditions>
+        <createTable tableName="user_roles">
+            <column name="user_id" type="uuid">
+                <constraints nullable="false"
+                             foreignKeyName="fk_ur_user"
+                             references="users(id)"/>
+            </column>
+            <column name="role" type="varchar(50)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="033-migrate-existing-user-roles" author="anas">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM databasechangelog WHERE id='033-migrate-existing-user-roles' AND filename='db/changelog/v1.xml'</sqlCheck>
+        </preConditions>
+        <sql>
+            INSERT INTO user_roles (user_id, role)
+            SELECT id, 'DASHBOARD_VIEWER' FROM users WHERE account_type = 'SUPERVISOR';
+
+            INSERT INTO user_roles (user_id, role)
+            SELECT id, 'REPORTS_MANAGER' FROM users WHERE account_type = 'SUPERVISOR';
+
+            INSERT INTO user_roles (user_id, role)
+            SELECT id, 'MACHINE_MANAGER' FROM users WHERE account_type = 'SUPERVISOR';
+
+            INSERT INTO user_roles (user_id, role)
+            SELECT id, 'STOP_TYPES_MANAGER' FROM users WHERE account_type = 'SUPERVISOR';
+
+            INSERT INTO user_roles (user_id, role)
+            SELECT id, 'USERS_MANAGER' FROM users WHERE account_type = 'SUPERVISOR';
+
+            INSERT INTO user_roles (user_id, role)
+            SELECT id, 'SHIFT_MANAGER' FROM users WHERE account_type = 'SUPERVISOR';
+
+            INSERT INTO user_roles (user_id, role)
+            SELECT id, 'FIELD_REPORTER' FROM users WHERE account_type = 'STAFF';
+        </sql>
+    </changeSet>
+
+
+    <changeSet id="035-add-reports-manager-role-to-supervisors" author="anas">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM databasechangelog WHERE id='035-add-reports-manager-role-to-supervisors' AND filename='db/changelog/v1.xml'</sqlCheck>
+        </preConditions>
+        <sql>
+            INSERT INTO user_roles (user_id, role)
+            SELECT id, 'REPORTS_MANAGER' FROM users WHERE account_type = 'SUPERVISOR';
+        </sql>
+    </changeSet>
+
+    <changeSet id="034-rename-user-id-to-username" author="anas">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM databasechangelog WHERE id='034-rename-user-id-to-username' AND filename='db/changelog/v1.xml'</sqlCheck>
+        </preConditions>
+        <renameColumn tableName="users" oldColumnName="user_id" newColumnName="username" columnDataType="varchar(255)"/>
+    </changeSet>
+
+    <changeSet id="037-add-audit-fields-to-machines" author="anas">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM databasechangelog WHERE id='037-add-audit-fields-to-machines' AND filename='db/changelog/v1.xml'</sqlCheck>
+        </preConditions>
+        <addColumn tableName="machines">
+            <column name="last_updated_at" type="timestamp"/>
+            <column name="last_updated_by" type="varchar(100)"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="038-add-audit-fields-to-stop-types" author="anas">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM databasechangelog WHERE id='038-add-audit-fields-to-stop-types' AND filename='db/changelog/v1.xml'</sqlCheck>
+        </preConditions>
+        <addColumn tableName="stop_types">
+            <column name="last_updated_at" type="timestamp"/>
+            <column name="last_updated_by" type="varchar(100)"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="039-add-audit-fields-to-shifts" author="anas">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM databasechangelog WHERE id='039-add-audit-fields-to-shifts' AND filename='db/changelog/v1.xml'</sqlCheck>
+        </preConditions>
+        <addColumn tableName="shifts">
+            <column name="last_updated_at" type="timestamp"/>
+            <column name="last_updated_by" type="varchar(100)"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="041-rename-updated-at-in-users" author="anas">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM databasechangelog WHERE id='041-rename-updated-at-in-users' AND filename='db/changelog/v1.xml'</sqlCheck>
+        </preConditions>
+        <renameColumn tableName="users"
+                      oldColumnName="updated_at"
+                      newColumnName="last_updated_at"
+                      columnDataType="timestamp"/>
+    </changeSet>
+
+    <changeSet id="042-backfill-audit-fields-machines" author="anas">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM databasechangelog WHERE id='042-backfill-audit-fields-machines' AND filename='db/changelog/v1.xml'</sqlCheck>
+        </preConditions>
+        <sql>
+            UPDATE machines
+            SET last_updated_by = 'default-user',
+                last_updated_at = NOW()
+            WHERE last_updated_by IS NULL;
+        </sql>
+    </changeSet>
+
+    <changeSet id="043-backfill-audit-fields-stop-types" author="anas">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM databasechangelog WHERE id='043-backfill-audit-fields-stop-types' AND filename='db/changelog/v1.xml'</sqlCheck>
+        </preConditions>
+        <sql>
+            UPDATE stop_types
+            SET last_updated_by = 'default-user',
+                last_updated_at = NOW()
+            WHERE last_updated_by IS NULL;
+        </sql>
+    </changeSet>
+
+    <changeSet id="044-backfill-audit-fields-shifts" author="anas">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM databasechangelog WHERE id='044-backfill-audit-fields-shifts' AND filename='db/changelog/v1.xml'</sqlCheck>
+        </preConditions>
+        <sql>
+            UPDATE shifts
+            SET last_updated_by = 'default-user',
+                last_updated_at = NOW()
+            WHERE last_updated_by IS NULL;
+        </sql>
+    </changeSet>
+
+    <changeSet id="036-create-products-table" author="anas">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM databasechangelog WHERE id='036-create-products-table' AND filename='db/changelog/v1.xml'</sqlCheck>
+        </preConditions>
+        <createTable tableName="products">
+            <column name="id" type="uuid">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="varchar(100)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="description" type="varchar(500)"/>
+            <column name="created_at" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="040-add-audit-fields-to-products" author="anas">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM databasechangelog WHERE id='040-add-audit-fields-to-products' AND filename='db/changelog/v1.xml'</sqlCheck>
+        </preConditions>
+        <addColumn tableName="products">
+            <column name="last_updated_at" type="timestamp"/>
+            <column name="last_updated_by" type="varchar(100)"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="044a-resize-last-updated-by-machines" author="anas">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM databasechangelog WHERE id='044a-resize-last-updated-by-machines' AND filename='db/changelog/v1.xml'</sqlCheck>
+        </preConditions>
+        <modifyDataType tableName="machines" columnName="last_updated_by" newDataType="varchar(255)"/>
+    </changeSet>
+
+    <changeSet id="044b-resize-last-updated-by-stop-types" author="anas">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM databasechangelog WHERE id='044b-resize-last-updated-by-stop-types' AND filename='db/changelog/v1.xml'</sqlCheck>
+        </preConditions>
+        <modifyDataType tableName="stop_types" columnName="last_updated_by" newDataType="varchar(255)"/>
+    </changeSet>
+
+    <changeSet id="044c-resize-last-updated-by-shifts" author="anas">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM databasechangelog WHERE id='044c-resize-last-updated-by-shifts' AND filename='db/changelog/v1.xml'</sqlCheck>
+        </preConditions>
+        <modifyDataType tableName="shifts" columnName="last_updated_by" newDataType="varchar(255)"/>
+    </changeSet>
+
+    <changeSet id="044d-resize-last-updated-by-products" author="anas">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM databasechangelog WHERE id='044d-resize-last-updated-by-products' AND filename='db/changelog/v1.xml'</sqlCheck>
+        </preConditions>
+        <modifyDataType tableName="products" columnName="last_updated_by" newDataType="varchar(255)"/>
+    </changeSet>
+
+    <changeSet id="045-replace-audit-fields-machines" author="anas">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM databasechangelog WHERE id='045-replace-audit-fields-machines' AND filename='db/changelog/v1.xml'</sqlCheck>
+        </preConditions>
+        <dropColumn tableName="machines" columnName="last_updated_at"/>
+        <dropColumn tableName="machines" columnName="last_updated_by"/>
+        <addColumn tableName="machines">
+            <column name="created_by" type="varchar(255)"/>
+        </addColumn>
+        <sql>UPDATE machines SET created_by = 'default-user' WHERE created_by IS NULL</sql>
+    </changeSet>
+
+    <changeSet id="046-replace-audit-fields-stop-types" author="anas">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM databasechangelog WHERE id='046-replace-audit-fields-stop-types' AND filename='db/changelog/v1.xml'</sqlCheck>
+        </preConditions>
+        <dropColumn tableName="stop_types" columnName="last_updated_at"/>
+        <dropColumn tableName="stop_types" columnName="last_updated_by"/>
+        <addColumn tableName="stop_types">
+            <column name="created_by" type="varchar(255)"/>
+        </addColumn>
+        <sql>UPDATE stop_types SET created_by = 'default-user' WHERE created_by IS NULL</sql>
+    </changeSet>
+
+    <changeSet id="047-replace-audit-fields-shifts" author="anas">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM databasechangelog WHERE id='047-replace-audit-fields-shifts' AND filename='db/changelog/v1.xml'</sqlCheck>
+        </preConditions>
+        <dropColumn tableName="shifts" columnName="last_updated_at"/>
+        <dropColumn tableName="shifts" columnName="last_updated_by"/>
+        <addColumn tableName="shifts">
+            <column name="created_by" type="varchar(255)"/>
+        </addColumn>
+        <sql>UPDATE shifts SET created_by = 'default-user' WHERE created_by IS NULL</sql>
+    </changeSet>
+
+    <changeSet id="048-replace-audit-fields-products" author="anas">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM databasechangelog WHERE id='048-replace-audit-fields-products' AND filename='db/changelog/v1.xml'</sqlCheck>
+        </preConditions>
+        <dropColumn tableName="products" columnName="last_updated_at"/>
+        <dropColumn tableName="products" columnName="last_updated_by"/>
+        <dropColumn tableName="products" columnName="description"/>
+        <addColumn tableName="products">
+            <column name="created_by" type="varchar(255)"/>
+        </addColumn>
+        <sql>UPDATE products SET created_by = 'default-user' WHERE created_by IS NULL</sql>
+    </changeSet>
+
+    <changeSet id="049-add-audit-fields-to-users" author="anas">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM databasechangelog WHERE id='049-add-audit-fields-to-users' AND filename='db/changelog/v1.xml'</sqlCheck>
+        </preConditions>
+        <addColumn tableName="users">
+            <column name="created_by" type="varchar(255)"/>
+            <column name="last_updated_by" type="varchar(255)"/>
+        </addColumn>
+        <sql>
+            UPDATE users SET created_by = 'default-user' WHERE created_by IS NULL;
+            UPDATE users SET last_updated_by = 'default-user' WHERE last_updated_by IS NULL;
+        </sql>
+    </changeSet>
+
+    <changeSet id="050-seed-products" author="anas">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM databasechangelog WHERE id='050-seed-products' AND filename='db/changelog/v1.xml'</sqlCheck>
+        </preConditions>
+        <sqlFile path="classpath:db/data/products-seed.sql"/>
+    </changeSet>
+
+    <changeSet id="051-create-departments-table" author="anas">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM databasechangelog WHERE id='051-create-departments-table' AND filename='db/changelog/v1.xml'</sqlCheck>
+        </preConditions>
+        <createTable tableName="departments">
+            <column name="id" type="uuid">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="varchar(255)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="stages" type="text">
+                <constraints nullable="false"/>
+            </column>
+            <column name="has_outputs" type="boolean" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="show_consignee" type="boolean" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="standard_holding_time" type="integer">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by" type="varchar(255)"/>
+            <column name="last_updated_at" type="timestamp"/>
+            <column name="last_updated_by" type="varchar(255)"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="052-create-department-units-table" author="anas">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM databasechangelog WHERE id='052-create-department-units-table' AND filename='db/changelog/v1.xml'</sqlCheck>
+        </preConditions>
+        <createTable tableName="department_units">
+            <column name="department_id" type="uuid">
+                <constraints nullable="false"
+                             foreignKeyName="fk_du_department"
+                             references="departments(id)"/>
+            </column>
+            <column name="unit" type="varchar(100)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="053-create-department-supervisors-table" author="anas">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM databasechangelog WHERE id='053-create-department-supervisors-table' AND filename='db/changelog/v1.xml'</sqlCheck>
+        </preConditions>
+        <createTable tableName="department_supervisors">
+            <column name="department_id" type="uuid">
+                <constraints nullable="false"
+                             foreignKeyName="fk_ds_department"
+                             references="departments(id)"/>
+            </column>
+            <column name="user_id" type="uuid">
+                <constraints nullable="false"
+                             foreignKeyName="fk_ds_user"
+                             references="users(id)"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="056-add-department-id-to-machines" author="anas">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM databasechangelog WHERE id='056-add-department-id-to-machines' AND filename='db/changelog/v1.xml'</sqlCheck>
+        </preConditions>
+        <addColumn tableName="machines">
+            <column name="department_id" type="uuid">
+                <constraints nullable="true"
+                             foreignKeyName="fk_machine_department"
+                             references="departments(id)"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="055-add-is-terminal-department-to-departments" author="anas">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM databasechangelog WHERE id='055-add-is-terminal-department-to-departments' AND filename='db/changelog/v1.xml'</sqlCheck>
+        </preConditions>
+        <addColumn tableName="departments">
+            <column name="is_terminal_department" type="boolean" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="054-create-department-exceptional-holdings-table" author="anas">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM databasechangelog WHERE id='054-create-department-exceptional-holdings-table' AND filename='db/changelog/v1.xml'</sqlCheck>
+        </preConditions>
+        <createTable tableName="department_exceptional_holdings">
+            <column name="id" type="uuid">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="department_id" type="uuid">
+                <constraints nullable="false"
+                             foreignKeyName="fk_deh_department"
+                             references="departments(id)"/>
+            </column>
+            <column name="product_id" type="uuid">
+                <constraints nullable="false"
+                             foreignKeyName="fk_deh_product"
+                             references="products(id)"/>
+            </column>
+            <column name="holding_time_days" type="integer">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="057-create-batches-table" author="anas">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM databasechangelog WHERE id='057-create-batches-table' AND filename='db/changelog/v1.xml'</sqlCheck>
+        </preConditions>
+        <createTable tableName="batches">
+            <column name="id" type="uuid">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="batch_no" type="varchar(100)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="product_id" type="uuid">
+                <constraints nullable="false"
+                             foreignKeyName="fk_batch_product"
+                             references="products(id)"/>
+            </column>
+            <column name="status" type="varchar(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="current_department_id" type="uuid">
+                <constraints foreignKeyName="fk_batch_current_department"
+                             references="departments(id)"/>
+            </column>
+            <column name="current_machine_id" type="uuid">
+                <constraints foreignKeyName="fk_batch_current_machine"
+                             references="machines(id)"/>
+            </column>
+            <column name="first_logged_date" type="date"/>
+            <column name="first_logged_time" type="time"/>
+            <column name="created_at" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by" type="varchar(255)"/>
+            <column name="last_updated_at" type="timestamp"/>
+            <column name="last_updated_by" type="varchar(255)"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="058-create-batch-log-entries-table" author="anas">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM databasechangelog WHERE id='058-create-batch-log-entries-table' AND filename='db/changelog/v1.xml'</sqlCheck>
+        </preConditions>
+        <createTable tableName="batch_log_entries">
+            <column name="id" type="uuid">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="batch_id" type="uuid">
+                <constraints nullable="false"
+                             foreignKeyName="fk_ble_batch"
+                             references="batches(id)"/>
+            </column>
+            <column name="department_id" type="uuid">
+                <constraints nullable="false"
+                             foreignKeyName="fk_ble_department"
+                             references="departments(id)"/>
+            </column>
+            <column name="machine_id" type="uuid">
+                <constraints nullable="false"
+                             foreignKeyName="fk_ble_machine"
+                             references="machines(id)"/>
+            </column>
+            <column name="product_id" type="uuid">
+                <constraints nullable="false"
+                             foreignKeyName="fk_ble_product"
+                             references="products(id)"/>
+            </column>
+            <column name="line_clearance_date" type="date">
+                <constraints nullable="false"/>
+            </column>
+            <column name="line_clearance_time" type="time">
+                <constraints nullable="false"/>
+            </column>
+            <column name="is_rejected" type="boolean" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="rejected_reason" type="varchar(500)"/>
+            <column name="created_at" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by" type="varchar(255)"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="059-add-active-to-products" author="anas">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM databasechangelog WHERE id='059-add-active-to-products' AND filename='db/changelog/v1.xml'</sqlCheck>
+        </preConditions>
+        <addColumn tableName="products">
+            <column name="active" type="boolean" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="060-add-active-to-machines" author="anas">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM databasechangelog WHERE id='060-add-active-to-machines' AND filename='db/changelog/v1.xml'</sqlCheck>
+        </preConditions>
+        <addColumn tableName="machines">
+            <column name="active" type="boolean" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="061-add-active-to-shifts" author="anas">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM databasechangelog WHERE id='061-add-active-to-shifts' AND filename='db/changelog/v1.xml'</sqlCheck>
+        </preConditions>
+        <addColumn tableName="shifts">
+            <column name="active" type="boolean" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="062-add-active-to-departments" author="anas">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM databasechangelog WHERE id='062-add-active-to-departments' AND filename='db/changelog/v1.xml'</sqlCheck>
+        </preConditions>
+        <addColumn tableName="departments">
+            <column name="active" type="boolean" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="063-add-machine-fk-to-work-report-machines" author="anas">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM databasechangelog WHERE id='063-add-machine-fk-to-work-report-machines' AND filename='db/changelog/v1.xml'</sqlCheck>
+        </preConditions>
+        <sql>ALTER TABLE work_report_machines
+            ADD CONSTRAINT fk_wrm_machine FOREIGN KEY (machine_id) REFERENCES machines(id) NOT VALID;</sql>
+        <rollback>
+            <sql>ALTER TABLE work_report_machines DROP CONSTRAINT fk_wrm_machine;</sql>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="064-add-shift-fk-to-work-reports" author="anas">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM databasechangelog WHERE id='064-add-shift-fk-to-work-reports' AND filename='db/changelog/v1.xml'</sqlCheck>
+        </preConditions>
+        <sql>ALTER TABLE work_reports
+            ADD CONSTRAINT fk_wr_shift FOREIGN KEY (shift_id) REFERENCES shifts(id) NOT VALID;</sql>
+        <rollback>
+            <sql>ALTER TABLE work_reports DROP CONSTRAINT fk_wr_shift;</sql>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="065-add-audit-fields-to-products" author="anas">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM databasechangelog WHERE id='065-add-audit-fields-to-products' AND filename='db/changelog/v1.xml'</sqlCheck>
+        </preConditions>
+        <addColumn tableName="products">
+            <column name="last_updated_at" type="timestamp"/>
+            <column name="last_updated_by" type="varchar(255)"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="066-add-audit-fields-to-machines" author="anas">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM databasechangelog WHERE id='066-add-audit-fields-to-machines' AND filename='db/changelog/v1.xml'</sqlCheck>
+        </preConditions>
+        <addColumn tableName="machines">
+            <column name="last_updated_at" type="timestamp"/>
+            <column name="last_updated_by" type="varchar(255)"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="067-add-audit-fields-to-shifts" author="anas">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM databasechangelog WHERE id='067-add-audit-fields-to-shifts' AND filename='db/changelog/v1.xml'</sqlCheck>
+        </preConditions>
+        <addColumn tableName="shifts">
+            <column name="last_updated_at" type="timestamp"/>
+            <column name="last_updated_by" type="varchar(255)"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="068-make-batch-log-entry-department-machine-nullable" author="anas">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM databasechangelog WHERE id='068-make-batch-log-entry-department-machine-nullable' AND filename='db/changelog/v1.xml'</sqlCheck>
+        </preConditions>
+        <dropNotNullConstraint tableName="batch_log_entries" columnName="department_id" columnDataType="uuid"/>
+        <dropNotNullConstraint tableName="batch_log_entries" columnName="machine_id" columnDataType="uuid"/>
+    </changeSet>
+
+    <changeSet id="069-add-is-completed-to-batch-log-entries" author="anas">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM databasechangelog WHERE id='069-add-is-completed-to-batch-log-entries' AND filename='db/changelog/v1.xml'</sqlCheck>
+        </preConditions>
+        <addColumn tableName="batch_log_entries">
+            <column name="is_completed" type="boolean" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="070-add-is-logged-out-to-batch-log-entries" author="anas">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM databasechangelog WHERE id='070-add-is-logged-out-to-batch-log-entries' AND filename='db/changelog/v1.xml'</sqlCheck>
+        </preConditions>
+        <addColumn tableName="batch_log_entries">
+            <column name="is_logged_out" type="boolean" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="071-add-first-logged-at-to-batches" author="anas">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM databasechangelog WHERE id='071-add-first-logged-at-to-batches' AND filename='db/changelog/v1.xml'</sqlCheck>
+        </preConditions>
+        <addColumn tableName="batches">
+            <column name="first_logged_at" type="timestamp"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="072-backfill-first-logged-at-on-batches" author="anas">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM databasechangelog WHERE id='072-backfill-first-logged-at-on-batches' AND filename='db/changelog/v1.xml'</sqlCheck>
+        </preConditions>
+        <sql>UPDATE batches
+             SET first_logged_at = first_logged_date + first_logged_time
+             WHERE first_logged_date IS NOT NULL AND first_logged_time IS NOT NULL;</sql>
+        <rollback/>
+    </changeSet>
+
+    <changeSet id="073-drop-first-logged-date-time-from-batches" author="anas">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM databasechangelog WHERE id='073-drop-first-logged-date-time-from-batches' AND filename='db/changelog/v1.xml'</sqlCheck>
+        </preConditions>
+        <dropColumn tableName="batches" columnName="first_logged_date"/>
+        <dropColumn tableName="batches" columnName="first_logged_time"/>
+    </changeSet>
+
+    <changeSet id="074-add-line-clearance-at-to-batch-log-entries" author="anas">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM databasechangelog WHERE id='074-add-line-clearance-at-to-batch-log-entries' AND filename='db/changelog/v1.xml'</sqlCheck>
+        </preConditions>
+        <addColumn tableName="batch_log_entries">
+            <column name="line_clearance_at" type="timestamp"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="075-backfill-line-clearance-at-on-batch-log-entries" author="anas">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM databasechangelog WHERE id='075-backfill-line-clearance-at-on-batch-log-entries' AND filename='db/changelog/v1.xml'</sqlCheck>
+        </preConditions>
+        <sql>UPDATE batch_log_entries
+             SET line_clearance_at = line_clearance_date + line_clearance_time
+             WHERE line_clearance_date IS NOT NULL AND line_clearance_time IS NOT NULL;</sql>
+        <rollback/>
+    </changeSet>
+
+    <changeSet id="076-set-line-clearance-at-not-null-on-batch-log-entries" author="anas">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM databasechangelog WHERE id='076-set-line-clearance-at-not-null-on-batch-log-entries' AND filename='db/changelog/v1.xml'</sqlCheck>
+        </preConditions>
+        <addNotNullConstraint tableName="batch_log_entries" columnName="line_clearance_at" columnDataType="timestamp"/>
+    </changeSet>
+
+    <changeSet id="077-drop-line-clearance-date-time-from-batch-log-entries" author="anas">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM databasechangelog WHERE id='077-drop-line-clearance-date-time-from-batch-log-entries' AND filename='db/changelog/v1.xml'</sqlCheck>
+        </preConditions>
+        <dropColumn tableName="batch_log_entries" columnName="line_clearance_date"/>
+        <dropColumn tableName="batch_log_entries" columnName="line_clearance_time"/>
+    </changeSet>
+
+    <changeSet id="078-add-created-by-full-name-to-batch-log-entries" author="anas">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM databasechangelog WHERE id='078-add-created-by-full-name-to-batch-log-entries' AND filename='db/changelog/v1.xml'</sqlCheck>
+        </preConditions>
+        <addColumn tableName="batch_log_entries">
+            <column name="created_by_full_name" type="varchar(255)"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="079-add-created-by-full-name-to-batches" author="anas">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM databasechangelog WHERE id='079-add-created-by-full-name-to-batches' AND filename='db/changelog/v1.xml'</sqlCheck>
+        </preConditions>
+        <addColumn tableName="batches">
+            <column name="created_by_full_name" type="varchar(255)"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="080-add-last-updated-by-full-name-to-batches" author="anas">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM databasechangelog WHERE id='080-add-last-updated-by-full-name-to-batches' AND filename='db/changelog/v1.xml'</sqlCheck>
+        </preConditions>
+        <addColumn tableName="batches">
+            <column name="last_updated_by_full_name" type="varchar(255)"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="081-add-stop-type-fk-to-work-report-product-stops" author="anas">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM databasechangelog WHERE id='081-add-stop-type-fk-to-work-report-product-stops' AND filename='db/changelog/v1.xml'</sqlCheck>
+        </preConditions>
+        <sql>ALTER TABLE work_report_product_stops
+            ADD CONSTRAINT fk_wrps_stop_type FOREIGN KEY (stop_type_id) REFERENCES stop_types(id) NOT VALID;</sql>
+        <rollback>
+            <sql>ALTER TABLE work_report_product_stops DROP CONSTRAINT fk_wrps_stop_type;</sql>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="082-add-active-to-stop-types" author="anas">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM databasechangelog WHERE id='082-add-active-to-stop-types' AND filename='db/changelog/v1.xml'</sqlCheck>
+        </preConditions>
+        <addColumn tableName="stop_types">
+            <column name="active" type="boolean" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="083-add-audit-fields-to-stop-types" author="anas">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM databasechangelog WHERE id='083-add-audit-fields-to-stop-types' AND filename='db/changelog/v1.xml'</sqlCheck>
+        </preConditions>
+        <addColumn tableName="stop_types">
+            <column name="last_updated_at" type="timestamp"/>
+            <column name="last_updated_by" type="varchar(255)"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="084-create-notifications-table" author="anas">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM databasechangelog WHERE id='084-create-notifications-table' AND filename='db/changelog/v1.xml'</sqlCheck>
+        </preConditions>
+        <createTable tableName="notifications">
+            <column name="id" type="uuid">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="recipient_user_id" type="uuid">
+                <constraints nullable="false"
+                             foreignKeyName="fk_notification_recipient"
+                             references="users(id)"/>
+            </column>
+            <column name="type" type="varchar(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="title" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="message" type="varchar(2000)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="entity_type" type="varchar(100)"/>
+            <column name="entity_id" type="varchar(100)"/>
+            <column name="is_read" type="boolean" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="read_at" type="timestamp"/>
+        </createTable>
+        <createIndex tableName="notifications" indexName="idx_notifications_recipient_unread">
+            <column name="recipient_user_id"/>
+            <column name="is_read"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="085-index-notifications-recipient-created-at" author="anas">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM databasechangelog WHERE id='085-index-notifications-recipient-created-at' AND filename='db/changelog/v1.xml'</sqlCheck>
+        </preConditions>
+        <createIndex tableName="notifications" indexName="idx_notifications_recipient_created_at">
+            <column name="recipient_user_id"/>
+            <column name="created_at" descending="true"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="086-backfill-audit-fields-products" author="anas">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM databasechangelog WHERE id='086-backfill-audit-fields-products' AND filename='db/changelog/v1.xml'</sqlCheck>
+        </preConditions>
+        <sql>
+            UPDATE products SET created_by = 'default-user' WHERE created_by IS NULL;
+            UPDATE products SET created_at = NOW() WHERE created_at IS NULL;
+            UPDATE products SET last_updated_by = 'default-user' WHERE last_updated_by IS NULL;
+            UPDATE products SET last_updated_at = NOW() WHERE last_updated_at IS NULL;
+        </sql>
+    </changeSet>
+
+    <changeSet id="087-backfill-audit-fields-machines" author="anas">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM databasechangelog WHERE id='087-backfill-audit-fields-machines' AND filename='db/changelog/v1.xml'</sqlCheck>
+        </preConditions>
+        <sql>
+            UPDATE machines SET created_by = 'default-user' WHERE created_by IS NULL;
+            UPDATE machines SET created_at = NOW() WHERE created_at IS NULL;
+            UPDATE machines SET last_updated_by = 'default-user' WHERE last_updated_by IS NULL;
+            UPDATE machines SET last_updated_at = NOW() WHERE last_updated_at IS NULL;
+        </sql>
+    </changeSet>
+
+    <changeSet id="088-backfill-audit-fields-users" author="anas">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM databasechangelog WHERE id='088-backfill-audit-fields-users' AND filename='db/changelog/v1.xml'</sqlCheck>
+        </preConditions>
+        <sql>
+            UPDATE users SET created_by = 'default-user' WHERE created_by IS NULL;
+            UPDATE users SET created_at = NOW() WHERE created_at IS NULL;
+            UPDATE users SET last_updated_by = 'default-user' WHERE last_updated_by IS NULL;
+            UPDATE users SET last_updated_at = NOW() WHERE last_updated_at IS NULL;
+        </sql>
+    </changeSet>
+
+    <changeSet id="089-backfill-audit-fields-stop-types" author="anas">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM databasechangelog WHERE id='089-backfill-audit-fields-stop-types' AND filename='db/changelog/v1.xml'</sqlCheck>
+        </preConditions>
+        <sql>
+            UPDATE stop_types SET created_by = 'default-user' WHERE created_by IS NULL;
+            UPDATE stop_types SET created_at = NOW() WHERE created_at IS NULL;
+            UPDATE stop_types SET last_updated_by = 'default-user' WHERE last_updated_by IS NULL;
+            UPDATE stop_types SET last_updated_at = NOW() WHERE last_updated_at IS NULL;
+        </sql>
+    </changeSet>
+
+    <changeSet id="090-backfill-audit-fields-shifts" author="anas">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM databasechangelog WHERE id='090-backfill-audit-fields-shifts' AND filename='db/changelog/v1.xml'</sqlCheck>
+        </preConditions>
+        <sql>
+            UPDATE shifts SET created_by = 'default-user' WHERE created_by IS NULL;
+            UPDATE shifts SET created_at = NOW() WHERE created_at IS NULL;
+            UPDATE shifts SET last_updated_by = 'default-user' WHERE last_updated_by IS NULL;
+            UPDATE shifts SET last_updated_at = NOW() WHERE last_updated_at IS NULL;
+        </sql>
+    </changeSet>
+
+    <changeSet id="091-add-current-department-entered-at-to-batches" author="anas">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM databasechangelog WHERE id='091-add-current-department-entered-at-to-batches' AND filename='db/changelog/v1.xml'</sqlCheck>
+        </preConditions>
+        <addColumn tableName="batches">
+            <column name="current_department_entered_at" type="timestamp"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="092-add-holding-alert-flags-to-batches" author="anas">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM databasechangelog WHERE id='092-add-holding-alert-flags-to-batches' AND filename='db/changelog/v1.xml'</sqlCheck>
+        </preConditions>
+        <addColumn tableName="batches">
+            <column name="general_holding_alerted" type="boolean" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="general_holding_exceeded" type="boolean" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="department_holding_alerted" type="boolean" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="department_holding_exceeded" type="boolean" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="093-add-department-id-to-work-report-machines" author="anas">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM databasechangelog WHERE id='093-add-department-id-to-work-report-machines' AND filename='db/changelog/v1.xml'</sqlCheck>
+        </preConditions>
+        <addColumn tableName="work_report_machines">
+            <column name="department_id" type="uuid">
+                <constraints nullable="true"
+                             foreignKeyName="fk_wrm_department"
+                             references="departments(id)"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="094-add-product-id-to-work-report-products" author="anas">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM databasechangelog WHERE id='094-add-product-id-to-work-report-products' AND filename='db/changelog/v1.xml'</sqlCheck>
+        </preConditions>
+        <addColumn tableName="work_report_products">
+            <column name="product_id" type="uuid">
+                <constraints nullable="true"
+                             foreignKeyName="fk_wrp_product"
+                             references="products(id)"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="095-add-notes-to-work-report-products" author="anas">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM databasechangelog WHERE id='095-add-notes-to-work-report-products' AND filename='db/changelog/v1.xml'</sqlCheck>
+        </preConditions>
+        <addColumn tableName="work_report_products">
+            <column name="notes" type="varchar(255)"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="096-add-stages-to-work-report-products" author="anas">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM databasechangelog WHERE id='096-add-stages-to-work-report-products' AND filename='db/changelog/v1.xml'</sqlCheck>
+        </preConditions>
+        <addColumn tableName="work_report_products">
+            <column name="stages" type="text"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="097-add-unit-to-work-report-products" author="anas">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM databasechangelog WHERE id='097-add-unit-to-work-report-products' AND filename='db/changelog/v1.xml'</sqlCheck>
+        </preConditions>
+        <addColumn tableName="work_report_products">
+            <column name="unit" type="varchar(100)"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="099-drop-work-report-incidents-table" author="anas">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM databasechangelog WHERE id='099-drop-work-report-incidents-table' AND filename='db/changelog/v1.xml'</sqlCheck>
+        </preConditions>
+        <dropTable tableName="work_report_incidents"/>
+    </changeSet>
+
+    <changeSet id="100-rename-destination-to-consignee-in-work-report-products" author="anas">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM databasechangelog WHERE id='100-rename-destination-to-consignee-in-work-report-products' AND filename='db/changelog/v1.xml'</sqlCheck>
+        </preConditions>
+        <renameColumn tableName="work_report_products"
+                       oldColumnName="destination"
+                       newColumnName="consignee"
+                       columnDataType="varchar(150)"/>
+    </changeSet>
+
+    <changeSet id="101-add-department-name-to-work-report-machines" author="anas">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM databasechangelog WHERE id='101-add-department-name-to-work-report-machines' AND filename='db/changelog/v1.xml'</sqlCheck>
+        </preConditions>
+        <addColumn tableName="work_report_machines">
+            <column name="department_name" type="varchar(100)"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="102-backfill-department-name-on-work-report-machines" author="anas">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM databasechangelog WHERE id='102-backfill-department-name-on-work-report-machines' AND filename='db/changelog/v1.xml'</sqlCheck>
+        </preConditions>
+        <sql>UPDATE work_report_machines wrm
+            SET department_name = d.name
+            FROM departments d
+            WHERE wrm.department_id = d.id
+              AND wrm.department_name IS NULL;</sql>
+        <rollback/>
+    </changeSet>
+
+    <changeSet id="103-widen-consignee-in-work-report-products" author="anas">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM databasechangelog WHERE id='103-widen-consignee-in-work-report-products' AND filename='db/changelog/v1.xml'</sqlCheck>
+        </preConditions>
+        <modifyDataType tableName="work_report_products"
+                        columnName="consignee"
+                        newDataType="varchar(255)"/>
+    </changeSet>
+
+    <changeSet id="104-move-note-to-work-report-product-stops" author="anas">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM databasechangelog WHERE id='104-move-note-to-work-report-product-stops' AND filename='db/changelog/v1.xml'</sqlCheck>
+        </preConditions>
+        <addColumn tableName="work_report_product_stops">
+            <column name="note" type="varchar(255)"/>
+        </addColumn>
+        <dropColumn tableName="work_report_products" columnName="notes"/>
+    </changeSet>
+
+    <changeSet id="105-remove-is-logged-out-from-batch-log-entries" author="anas">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM databasechangelog WHERE id='105-remove-is-logged-out-from-batch-log-entries' AND filename='db/changelog/v1.xml'</sqlCheck>
+        </preConditions>
+        <sql>UPDATE batches SET status = 'IN_PROGRESS' WHERE status = 'LOGGED_OUT';</sql>
+        <dropColumn tableName="batch_log_entries" columnName="is_logged_out"/>
+    </changeSet>
+
+
+    <changeSet id="033-migrate-existing-user-roles-v11" author="anas">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM databasechangelog WHERE id='033-migrate-existing-user-roles-v11' AND filename='db/changelog/v1.xml'</sqlCheck>
+        </preConditions>
+        <sql>
+            INSERT INTO user_roles (user_id, role)
+            SELECT id, 'PRODUCTS_MANAGER' FROM users WHERE account_type = 'SUPERVISOR';
+
+            INSERT INTO user_roles (user_id, role)
+            SELECT id, 'DEPARTMENTS_MANAGER' FROM users WHERE account_type = 'SUPERVISOR';
+
+            INSERT INTO user_roles (user_id, role)
+            SELECT id, 'BATCH_TRACKING_MANAGER' FROM users WHERE account_type = 'SUPERVISOR';
+
+            INSERT INTO user_roles (user_id, role)
+            SELECT id, 'BATCH_LOG_REPORTER' FROM users WHERE account_type = 'STAFF';
+        </sql>
+    </changeSet>
+
+    <changeSet id="106-create-refresh-tokens" author="anas">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM databasechangelog WHERE id='106-create-refresh-tokens' AND filename='db/changelog/v1.xml'</sqlCheck>
+        </preConditions>
+        <createTable tableName="refresh_tokens">
+            <column name="id" type="uuid">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="user_id" type="uuid">
+                <constraints nullable="false"
+                             foreignKeyName="fk_rt_user"
+                             references="users(id)"/>
+            </column>
+            <column name="token_hash" type="varchar(64)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="expires_at" type="timestamp">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="107-drop-single-refresh-token-from-users" author="anas">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM databasechangelog WHERE id='107-drop-single-refresh-token-from-users' AND filename='db/changelog/v1.xml'</sqlCheck>
+        </preConditions>
+        <dropColumn tableName="users" columnName="refresh_token_hash"/>
+        <dropColumn tableName="users" columnName="refresh_token_expires_at"/>
+    </changeSet>
+
+</databaseChangeLog>

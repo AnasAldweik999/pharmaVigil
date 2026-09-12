@@ -1,0 +1,16 @@
+-- [detail-shift-products]
+SELECT p.id, mach.id, mach.name, m.status, dept.name,
+       u.id, u.name, u.username, u.email, wr.reportDate,
+       prod.id, CASE WHEN prod IS NOT NULL THEN prod.name ELSE p.productName END,
+       p.batchNo, p.output, p.unit,
+       p.deviation, p.deviationDetails, p.hold, p.holdDetails, p.consignee,
+       p.stages
+FROM WorkReport wr JOIN wr.staffUser u JOIN wr.shift sh JOIN wr.machines m JOIN m.machine mach
+     LEFT JOIN m.department dept JOIN m.products p LEFT JOIN p.product prod
+{filter}
+ORDER BY wr.reportDate DESC, 12
+
+-- [detail-shift-products-count]
+SELECT COUNT(p.id)
+FROM WorkReport wr JOIN wr.staffUser u JOIN wr.shift sh JOIN wr.machines m JOIN m.machine mach JOIN m.products p
+{filter}

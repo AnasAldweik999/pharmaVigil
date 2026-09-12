@@ -1,0 +1,19 @@
+-- [grouped-staff-products]
+SELECT u.id, u.name, u.username, u.email,
+       COUNT(DISTINCT p.id),
+       COALESCE(SUM(CASE WHEN p.hold = true THEN 1 ELSE 0 END), 0),
+       COALESCE(SUM(CASE WHEN p.deviation = true THEN 1 ELSE 0 END), 0)
+FROM WorkReport wr JOIN wr.staffUser u JOIN wr.shift sh JOIN wr.machines m JOIN m.machine mach LEFT JOIN m.products p
+{filter}
+GROUP BY u.id, u.name, u.username, u.email ORDER BY u.name
+
+-- [grouped-staff-count]
+SELECT COUNT(DISTINCT u.id)
+FROM WorkReport wr JOIN wr.staffUser u JOIN wr.shift sh JOIN wr.machines m JOIN m.machine mach
+{filter}
+
+-- [grouped-staff-stops-page]
+SELECT u.id, COUNT(DISTINCT s.id), COALESCE(SUM(s.duration), 0)
+FROM WorkReport wr JOIN wr.staffUser u JOIN wr.shift sh JOIN wr.machines m JOIN m.machine mach LEFT JOIN m.products p LEFT JOIN p.stops s
+{filter} AND u.id IN :pageKeys
+GROUP BY u.id

@@ -1,0 +1,19 @@
+-- [grouped-shift-products]
+SELECT sh.id, sh.name,
+       COUNT(DISTINCT p.id),
+       COALESCE(SUM(CASE WHEN p.hold = true THEN 1 ELSE 0 END), 0),
+       COALESCE(SUM(CASE WHEN p.deviation = true THEN 1 ELSE 0 END), 0)
+FROM WorkReport wr JOIN wr.staffUser u JOIN wr.shift sh JOIN wr.machines m JOIN m.machine mach LEFT JOIN m.products p
+{filter}
+GROUP BY sh.id, sh.name ORDER BY sh.name
+
+-- [grouped-shift-count]
+SELECT COUNT(DISTINCT sh.id)
+FROM WorkReport wr JOIN wr.staffUser u JOIN wr.shift sh JOIN wr.machines m JOIN m.machine mach
+{filter}
+
+-- [grouped-shift-stops-page]
+SELECT sh.id, COUNT(DISTINCT s.id), COALESCE(SUM(s.duration), 0)
+FROM WorkReport wr JOIN wr.staffUser u JOIN wr.shift sh JOIN wr.machines m JOIN m.machine mach LEFT JOIN m.products p LEFT JOIN p.stops s
+{filter} AND sh.id IN :pageKeys
+GROUP BY sh.id

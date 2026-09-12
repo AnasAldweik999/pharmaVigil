@@ -1,0 +1,23 @@
+-- [summary-products]
+SELECT COUNT(DISTINCT p.id),
+       COALESCE(SUM(CASE WHEN p.hold = true THEN 1 ELSE 0 END), 0),
+       COALESCE(SUM(CASE WHEN p.deviation = true THEN 1 ELSE 0 END), 0)
+FROM WorkReport wr JOIN wr.staffUser u JOIN wr.shift sh JOIN wr.machines m JOIN m.machine mach LEFT JOIN m.products p
+{filter}
+
+-- [summary-stops]
+SELECT COUNT(DISTINCT s.id),
+       COALESCE(SUM(s.duration), 0)
+FROM WorkReport wr JOIN wr.staffUser u JOIN wr.shift sh JOIN wr.machines m JOIN m.machine mach LEFT JOIN m.products p LEFT JOIN p.stops s
+{filter}
+
+
+-- [stop-summary-aggregate]
+SELECT COUNT(DISTINCT COALESCE(str(s.stopType.id), CONCAT('legacy:', s.stopTypeName))), COUNT(DISTINCT p.id), COALESCE(SUM(s.duration), 0)
+FROM WorkReport wr JOIN wr.staffUser u JOIN wr.shift sh JOIN wr.machines m JOIN m.machine mach JOIN m.products p JOIN p.stops s
+{filter}
+
+-- [stop-summary-machines]
+SELECT COUNT(DISTINCT mach.id)
+FROM WorkReport wr JOIN wr.staffUser u JOIN wr.shift sh JOIN wr.machines m JOIN m.machine mach JOIN m.products p JOIN p.stops s
+{filter}

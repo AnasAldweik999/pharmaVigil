@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>PharmaVigil Holding Time Alert</title>
+</head>
+<body style="margin:0;padding:0;background-color:#f0f4f8;font-family:Arial,Helvetica,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#f0f4f8;">
+  <tr>
+    <td align="center" style="padding:40px 20px;">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:580px;">
+
+        <!-- Header -->
+        <tr>
+          <td style="background-color:#1a2942;border-radius:10px 10px 0 0;padding:36px 40px;text-align:center;">
+            <div style="color:#ffffff;font-size:24px;font-weight:bold;letter-spacing:0.5px;margin-bottom:4px;">PharmaVigil</div>
+            <div style="color:#7baee8;font-size:11px;letter-spacing:2px;text-transform:uppercase;">Pharmacovigilance Platform</div>
+          </td>
+        </tr>
+
+        <!-- Body -->
+        <tr>
+          <td style="background-color:#ffffff;padding:40px 40px 32px;">
+            <h2 style="margin:0 0 20px 0;color:#1a2942;font-size:20px;font-weight:bold;">Batch Holding Time {{severityLabel}}</h2>
+
+            <p style="margin:0 0 16px 0;color:#374151;font-size:15px;line-height:1.6;">Dear <strong>{{recipientName}}</strong>,</p>
+            <p style="margin:0 0 24px 0;color:#374151;font-size:15px;line-height:1.6;">A batch you supervise has {{severityVerb}} its {{ruleLabelLower}} holding time limit. Details below:</p>
+
+            <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;">
+              <tr>
+                <td style="padding:12px 16px;background-color:#f9fafb;color:#6b7280;font-size:13px;font-weight:bold;width:45%;border-bottom:1px solid #e5e7eb;">Batch No</td>
+                <td style="padding:12px 16px;color:#1a2942;font-size:14px;border-bottom:1px solid #e5e7eb;">{{batchNo}}</td>
+              </tr>
+              <tr>
+                <td style="padding:12px 16px;background-color:#f9fafb;color:#6b7280;font-size:13px;font-weight:bold;border-bottom:1px solid #e5e7eb;">Product</td>
+                <td style="padding:12px 16px;color:#1a2942;font-size:14px;border-bottom:1px solid #e5e7eb;">{{productName}}</td>
+              </tr>
+              <tr>
+                <td style="padding:12px 16px;background-color:#f9fafb;color:#6b7280;font-size:13px;font-weight:bold;border-bottom:1px solid #e5e7eb;">Department</td>
+                <td style="padding:12px 16px;color:#1a2942;font-size:14px;border-bottom:1px solid #e5e7eb;">{{departmentName}}</td>
+              </tr>
+              <tr>
+                <td style="padding:12px 16px;background-color:#f9fafb;color:#6b7280;font-size:13px;font-weight:bold;border-bottom:1px solid #e5e7eb;">Rule Triggered</td>
+                <td style="padding:12px 16px;color:#1a2942;font-size:14px;border-bottom:1px solid #e5e7eb;">{{ruleLabel}} ({{thresholdNote}})</td>
+              </tr>
+              <tr>
+                <td style="padding:12px 16px;background-color:#f9fafb;color:#6b7280;font-size:13px;font-weight:bold;border-bottom:1px solid #e5e7eb;">Status</td>
+                <td style="padding:12px 16px;color:#1a2942;font-size:14px;border-bottom:1px solid #e5e7eb;">{{severityLabel}}</td>
+              </tr>
+              <tr>
+                <td style="padding:12px 16px;background-color:#f9fafb;color:#6b7280;font-size:13px;font-weight:bold;border-bottom:1px solid #e5e7eb;">Days Elapsed</td>
+                <td style="padding:12px 16px;color:#1a2942;font-size:14px;border-bottom:1px solid #e5e7eb;">{{daysElapsed}}</td>
+              </tr>
+              <tr>
+                <td style="padding:12px 16px;background-color:#f9fafb;color:#6b7280;font-size:13px;font-weight:bold;">Threshold (Days)</td>
+                <td style="padding:12px 16px;color:#1a2942;font-size:14px;">{{thresholdDays}}</td>
+              </tr>
+            </table>
+
+            <p style="margin:24px 0 0 0;color:#6b7280;font-size:13px;line-height:1.6;">Please review this batch's location and holding time in the PharmaVigil supervisor dashboard.</p>
+          </td>
+        </tr>
+
+        <!-- Bottom strip -->
+        <tr>
+          <td style="padding:24px 40px;text-align:center;">
+            <p style="margin:0;color:#9ca3af;font-size:12px;">&copy; 2026 PharmaVigil. All rights reserved.</p>
+            <p style="margin:6px 0 0 0;color:#b0b8c4;font-size:12px;">noreply@pharmavigiltrack.com</p>
+          </td>
+        </tr>
+
+      </table>
+    </td>
+  </tr>
+</table>
+</body>
+</html>
